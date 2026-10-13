@@ -321,11 +321,11 @@ pub const SCARD_READER_TYPE_PCMCIA: WORD = 0x40;
 pub const SCARD_READER_TYPE_VENDOR: WORD = 0xF0;
 
 #[cfg(target_os = "windows")]
-pub fn SCARD_CTL_CODE(code: DWORD) -> DWORD {
+pub const fn SCARD_CTL_CODE(code: DWORD) -> DWORD {
     0x0031_0000 | (code << 2)
 }
 #[cfg(not(target_os = "windows"))]
-pub fn SCARD_CTL_CODE(code: DWORD) -> DWORD {
+pub const fn SCARD_CTL_CODE(code: DWORD) -> DWORD {
     0x4200_0000 + code
 }
 
@@ -415,6 +415,7 @@ extern "system" {
         pcbRecvLength: *mut DWORD,
     ) -> LONG;
 
+    #[cfg_attr(target_os = "macos", link_name = "SCardControl132")]
     pub fn SCardControl(
         hCard: SCARDHANDLE,
         dwControlCode: DWORD,
