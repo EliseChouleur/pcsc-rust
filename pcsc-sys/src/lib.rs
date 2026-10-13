@@ -212,8 +212,8 @@ pub const SCARD_ATR_LENGTH: usize = MAX_ATR_SIZE;
 pub const MAX_BUFFER_SIZE: usize = 264;
 pub const MAX_BUFFER_SIZE_EXTENDED: usize = 4 + 3 + (1 << 16) + 3 + 2;
 
-#[cfg_attr(not(any(target_os = "macos", target_os = "android", target_os = "ios")), repr(C))]
-#[cfg_attr(any(target_os = "macos", target_os = "android", target_os = "ios"), repr(C, packed))]
+#[cfg_attr(not(any(target_os = "macos", target_os = "ios")), repr(C))]
+#[cfg_attr(any(target_os = "macos", target_os = "ios"), repr(C, packed))]
 pub struct SCARD_IO_REQUEST {
     pub dwProtocol: DWORD,
     pub cbPciLength: DWORD,
@@ -224,8 +224,8 @@ pub const ATR_BUFFER_SIZE: usize = MAX_ATR_SIZE;
 #[cfg(target_os = "windows")]
 pub const ATR_BUFFER_SIZE: usize = 36;
 
-#[cfg_attr(not(any(target_os = "macos", target_os = "android", target_os = "ios")), repr(C))]
-#[cfg_attr(any(target_os = "macos", target_os = "android", target_os = "ios"), repr(C, packed))]
+#[cfg_attr(not(any(target_os = "macos", target_os = "ios")), repr(C))]
+#[cfg_attr(any(target_os = "macos", target_os = "ios"), repr(C, packed))]
 pub struct SCARD_READERSTATE {
     pub szReader: *const c_char,
     pub pvUserData: *mut c_void,
@@ -234,6 +234,11 @@ pub struct SCARD_READERSTATE {
     pub cbAtr: DWORD,
     pub rgbAtr: [u8; ATR_BUFFER_SIZE],
 }
+
+// pcsc-lite does not pack these structures: a packed layout (73 bytes) makes arrays of
+// SCARD_READERSTATE (80 bytes in C) drift from the second element on.
+#[cfg(all(target_os = "android", target_pointer_width = "64"))]
+const _: () = assert!(core::mem::size_of::<SCARD_READERSTATE>() == 80);
 
 pub const SCARD_CLASS_VENDOR_INFO: ULONG = 1;
 pub const SCARD_CLASS_COMMUNICATIONS: ULONG = 2;
